@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 
+import 'pages/home.dart';
+
 void main() {
-  runApp(MyApp());
+  runApp(SavepointApp());
 }
 
-class MyApp extends StatelessWidget {
+class SavepointApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'FlutterShare',
+      title: 'Savepoint',
       debugShowCheckedModeBanner: false,
-      home: Text("Hello World"),
+      home: Home(),
     );
   }
 }

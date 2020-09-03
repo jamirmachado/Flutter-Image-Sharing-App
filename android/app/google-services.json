@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "898790971434",
+    "firebase_url": "https://savepoint-app.firebaseio.com",
+    "project_id": "savepoint-app",
+    "storage_bucket": "savepoint-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:898790971434:android:7b8ec50e0723aac3e48b53",
+        "android_client_info": {
+          "package_name": "com.sp.savepoint"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "898790971434-647b8hgi5inbhhjuibmu1m9gnv6d6efi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sp.savepoint",
+            "certificate_hash": "20c853f3207d7831037b3c6036c5aa904bb2c4fc"
+          }
+        },
+        {
+          "client_id": "898790971434-oetjbv3htbd2ftgcapfn4j6qi99hapsg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPI18_5OR-w_88cxnfl8jhftK8zmFEDus"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "898790971434-oetjbv3htbd2ftgcapfn4j6qi99hapsg.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "898790971434-oaotn5n3p40ukqh5656t20kfh635n0d8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.sp.savepoint"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

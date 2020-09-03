@@ -46,10 +46,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   fonts:
-    - family: Signatra
+    - family: NanoTech
       fonts:
-        - asset: assets/fonts/Signatra.ttf
+        - asset: assets/fonts/NanoTech.otf
   assets:
+    - assets/images/sp-logo.png
     - assets/images/google_signin_button.png
     - assets/images/upload.svg
     - assets/images/search.svg
