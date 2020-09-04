@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+import '../models/user.dart';
 import 'activity_feed.dart';
 import 'create_account.dart';
 import 'profile.dart';
@@ -13,6 +14,7 @@ import 'upload.dart';
 final googleSignIn = GoogleSignIn();
 final usersRef = Firestore.instance.collection('users');
 final DateTime timestamp = DateTime.now();
+User currentUser;
 
 class Home extends StatefulWidget {
   @override
@@ -61,7 +63,7 @@ class _HomeState extends State<Home> {
 
   createUser() async {
     final GoogleSignInAccount user = googleSignIn.currentUser;
-    final DocumentSnapshot doc = await usersRef.document(user.id).get();
+    DocumentSnapshot doc = await usersRef.document(user.id).get();
 
     if (!doc.exists) {
       //go to create account page
@@ -78,7 +80,12 @@ class _HomeState extends State<Home> {
         "bio": "",
         "timestamp": timestamp,
       });
+      doc = await usersRef.document(user.id).get();
     }
+    //
+    currentUser = User.fromDocument(doc);
+    print(currentUser);
+    print(currentUser.username);
   }
 
   @override
@@ -106,7 +113,7 @@ class _HomeState extends State<Home> {
   onTap(int pageIndex) {
     pageController.animateToPage(
       pageIndex,
-      duration: const Duration(milliseconds: 400),
+      duration: const Duration(milliseconds: 200),
       curve: Curves.easeInOut,
     );
   }
