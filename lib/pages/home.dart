@@ -1,14 +1,18 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import 'activity_feed.dart';
+import 'create_account.dart';
 import 'profile.dart';
 import 'search.dart';
 import 'timeline.dart';
 import 'upload.dart';
 
 final googleSignIn = GoogleSignIn();
+final usersRef = Firestore.instance.collection('users');
+final DateTime timestamp = DateTime.now();
 
 class Home extends StatefulWidget {
   @override
@@ -44,12 +48,35 @@ class _HomeState extends State<Home> {
   handleSignIn(GoogleSignInAccount account) {
     if (account != null) {
       print('user loged in!: $account');
+      createUser();
       setState(() {
         isAuth = true;
       });
     } else {
       setState(() {
         isAuth = false;
+      });
+    }
+  }
+
+  createUser() async {
+    final GoogleSignInAccount user = googleSignIn.currentUser;
+    final DocumentSnapshot doc = await usersRef.document(user.id).get();
+
+    if (!doc.exists) {
+      //go to create account page
+      final username = await Navigator.push(
+          context, MaterialPageRoute(builder: (context) => CreateAccount()));
+
+      //get user from account and store in db
+      usersRef.document(user.id).setData({
+        "id": user.id,
+        "username": username,
+        "avatar": user.photoUrl,
+        "email": user.email,
+        "diplayName": user.displayName,
+        "bio": "",
+        "timestamp": timestamp,
       });
     }
   }
@@ -88,7 +115,11 @@ class _HomeState extends State<Home> {
     return Scaffold(
       body: PageView(
         children: <Widget>[
-          Timeline(),
+          //Timeline(),
+          RaisedButton(
+            child: Text('logout'),
+            onPressed: logout,
+          ),
           ActivityFeed(),
           Upload(),
           Search(),
