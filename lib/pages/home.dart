@@ -111,11 +111,14 @@ class _HomeState extends State<Home> {
 // navigation controller
 //navigate to page index
   onTap(int pageIndex) {
-    pageController.animateToPage(
+    pageController.jumpToPage(
+      pageIndex,
+    );
+    /* pageController.animateToPage(
       pageIndex,
       duration: const Duration(milliseconds: 200),
       curve: Curves.easeInOut,
-    );
+    ); */
   }
 
   Scaffold buildAuthScreen() {
