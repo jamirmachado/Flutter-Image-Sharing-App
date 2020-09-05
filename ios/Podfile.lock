@@ -283,9 +283,9 @@ SPEC CHECKSUMS:
   leveldb-library: 55d93ee664b4007aac644a782d11da33fba316f7
   location_permissions: 67cfaff583afbb027a9f9248196f4b79c40f3cdc
   nanopb: 18003b5e52dab79db540fe93fe9579f399bd1ccd
-  path_provider: f96fff6166a8867510d2c25fdcc346327cc4b259
+  path_provider: abfe2b5c733d04e238b0d8691db0cfd63a27a93c
   Protobuf: 3dac39b34a08151c6d949560efe3f86134a3f748
-  sqflite: ff1d9da63c06588cc8d1faf7256d741f16989d5a
+  sqflite: 4001a31ff81d210346b500c55b17f4d6c7589dd0
 
 PODFILE CHECKSUM: 8e679eca47255a8ca8067c4c67aab20e64cb974d
 
