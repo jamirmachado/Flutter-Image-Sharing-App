@@ -30,18 +30,24 @@ class _SearchState extends State<Search> {
 
   AppBar buildSearchField() {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.purple[800],
       title: TextFormField(
+        style: TextStyle(color: Colors.white),
         controller: searchController,
         decoration: InputDecoration(
           hintText: "Search users",
+          hintStyle: TextStyle(color: Colors.white),
           filled: true,
           prefixIcon: Icon(
             Icons.account_box,
             size: 28,
+            color: Colors.white,
           ),
           suffixIcon: IconButton(
-            icon: Icon(Icons.clear),
+            icon: Icon(
+              Icons.clear,
+              color: Colors.white,
+            ),
             onPressed: clearSearch,
           ),
         ),
@@ -99,7 +105,7 @@ class _SearchState extends State<Search> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.purple[800],
+      backgroundColor: Colors.purple[900],
       appBar: buildSearchField(),
       body:
           searchResultsFuture == null ? buildNoContent() : buildSearchResults(),
