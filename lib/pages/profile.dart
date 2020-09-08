@@ -1,7 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:savepoint/models/user.dart';
 import 'package:savepoint/pages/home.dart';
+import 'package:savepoint/widgets/post.dart';
+import 'package:savepoint/widgets/post_tile.dart';
 import 'package:savepoint/widgets/progress.dart';
 
 import '../widgets/header.dart';
@@ -17,6 +21,32 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
   final String currentUserId = currentUser?.id;
+  String postOrientation = "grid";
+  bool isLoading = false;
+  int postCount = 0;
+  List<Post> posts = [];
+
+  @override
+  void initState() {
+    super.initState();
+    getProfilePosts();
+  }
+
+  getProfilePosts() async {
+    setState(() {
+      isLoading = true;
+    });
+    QuerySnapshot snapshot = await postsRef
+        .document(widget.profileId)
+        .collection('userPosts')
+        .orderBy('timestamp', descending: true)
+        .getDocuments();
+    setState(() {
+      isLoading = false;
+      postCount = snapshot.documents.length;
+      posts = snapshot.documents.map((doc) => Post.fromDocument(doc)).toList();
+    });
+  }
 
   buildProfileHeader() {
     Column buildCountColumn(String label, int count) {
@@ -118,7 +148,7 @@ class _ProfileState extends State<Profile> {
                             mainAxisSize: MainAxisSize.max,
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: <Widget>[
-                              buildCountColumn("posts", 0),
+                              buildCountColumn("posts", postCount),
                               buildCountColumn("followers", 0),
                               buildCountColumn("following", 0),
                             ],
@@ -168,6 +198,77 @@ class _ProfileState extends State<Profile> {
         });
   }
 
+  buildProfilePosts() {
+    if (isLoading) {
+      return circularProgress();
+    } else if (posts.isEmpty) {
+      return Container(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            SvgPicture.asset(
+              'assets/images/no_content.svg',
+              height: 260,
+            ),
+            Padding(
+              padding: EdgeInsets.only(top: 20),
+              child: Text(
+                'No posts yet ;(',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    } else if (postOrientation == "grid") {
+      List<GridTile> gridTiles = [];
+      posts.forEach((post) {
+        gridTiles.add(GridTile(child: PostTile(post)));
+      });
+      return GridView.count(
+        crossAxisCount: 3,
+        childAspectRatio: 1,
+        mainAxisSpacing: 1,
+        crossAxisSpacing: 1,
+        shrinkWrap: true,
+        physics: NeverScrollableScrollPhysics(),
+        children: gridTiles,
+      );
+    } else if (postOrientation == "list") {
+      return Column(
+        children: posts,
+      );
+    }
+  }
+
+  setPostsOrientation(String postOrientation) {
+    setState(() {
+      this.postOrientation = postOrientation;
+    });
+  }
+
+  buildTogglePostOrientation() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        IconButton(
+          onPressed: () => setPostsOrientation("grid"),
+          icon: Icon(Icons.grid_on),
+          color: postOrientation == 'grid' ? Colors.black : Colors.grey,
+        ),
+        IconButton(
+          onPressed: () => setPostsOrientation("list"),
+          icon: Icon(Icons.list),
+          color: postOrientation == 'list' ? Colors.black : Colors.grey,
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -175,6 +276,12 @@ class _ProfileState extends State<Profile> {
       body: ListView(
         children: <Widget>[
           buildProfileHeader(),
+          Divider(),
+          buildTogglePostOrientation(),
+          Divider(
+            height: 0.0,
+          ),
+          buildProfilePosts(),
         ],
       ),
     );
