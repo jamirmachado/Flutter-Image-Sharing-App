@@ -1,5 +1,9 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:savepoint/widgets/header.dart';
+import 'package:savepoint/widgets/progress.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 import 'home.dart';
 
@@ -35,7 +39,24 @@ class CommentsState extends State<Comments> {
   });
 
   buildComments() {
-    return Text("comment");
+    return StreamBuilder(
+        stream: commentsRef
+            .document(postId)
+            .collection('comments')
+            .orderBy('timestamp', descending: true)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return circularProgress();
+          }
+          List<Comment> comments = [];
+          snapshot.data.documents.forEach((doc) {
+            comments.add(Comment.fromDocument(doc));
+          });
+          return ListView(
+            children: comments,
+          );
+        });
   }
 
   addComment() {
@@ -44,7 +65,8 @@ class CommentsState extends State<Comments> {
       "username": currentUser.username,
       "avatarUrl": currentUser.avatar,
       "comment": commentController.text,
-      "timestamp": timestamp,
+      "timestamp": DateTime.now(),
+      //"timestamp": timestamp,
     });
     commentController.clear();
   }
@@ -75,8 +97,44 @@ class CommentsState extends State<Comments> {
 }
 
 class Comment extends StatelessWidget {
+  final String username;
+  final String userId;
+  final String avatarUrl;
+  final String comment;
+  final Timestamp timestamp;
+
+  Comment({
+    this.username,
+    this.userId,
+    this.avatarUrl,
+    this.comment,
+    this.timestamp,
+  });
+
+  factory Comment.fromDocument(DocumentSnapshot doc) {
+    return Comment(
+      username: doc['username'],
+      userId: doc['userId'],
+      comment: doc['comment'],
+      timestamp: doc['timestamp'],
+      avatarUrl: doc['avatarUrl'],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Text("");
+    return Column(
+      children: <Widget>[
+        ListTile(
+          title: Text(comment),
+          leading: CircleAvatar(
+            backgroundColor: Colors.grey,
+            backgroundImage: CachedNetworkImageProvider(avatarUrl),
+          ),
+          subtitle: Text(timeago.format(timestamp.toDate())),
+        ),
+        Divider(),
+      ],
+    );
   }
 }
