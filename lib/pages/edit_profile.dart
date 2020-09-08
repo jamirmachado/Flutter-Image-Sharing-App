@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import "package:flutter/material.dart";
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:savepoint/models/user.dart';
 import 'package:savepoint/pages/home.dart';
 import 'package:savepoint/widgets/progress.dart';
@@ -14,8 +15,11 @@ class EditProfile extends StatefulWidget {
 }
 
 class _EditProfileState extends State<EditProfile> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   TextEditingController displayNameController = TextEditingController();
   TextEditingController bioController = TextEditingController();
+  bool _displayNameValid = true;
+  bool _bioValid = true;
   bool isLoading = false;
   User user;
 
@@ -51,7 +55,10 @@ class _EditProfileState extends State<EditProfile> {
         ),
         TextField(
           controller: displayNameController,
-          decoration: InputDecoration(hintText: "Udpate Display Name"),
+          decoration: InputDecoration(
+            hintText: "Udpate Display Name",
+            errorText: _displayNameValid ? null : "Display name too short",
+          ),
         ),
       ],
     );
@@ -70,15 +77,44 @@ class _EditProfileState extends State<EditProfile> {
         ),
         TextField(
           controller: bioController,
-          decoration: InputDecoration(hintText: "Udpate your bio"),
+          decoration: InputDecoration(
+            hintText: "Udpate your bio",
+            errorText: _bioValid ? null : "Bio too long",
+          ),
         ),
       ],
     );
   }
 
+  updateProfileData() {
+    setState(() {
+      displayNameController.text.trim().length < 3 ||
+              displayNameController.text.isEmpty
+          ? _displayNameValid = false
+          : _displayNameValid = true;
+      bioController.text.trim().length > 100
+          ? _bioValid = false
+          : _bioValid = true;
+    });
+    if (_displayNameValid && _bioValid) {
+      usersRef.document(widget.currentUserId).updateData({
+        "displayName": displayNameController.text,
+        "bio": bioController.text,
+      });
+      SnackBar snackbar = SnackBar(content: Text("Profile updated!"));
+      _scaffoldKey.currentState.showSnackBar(snackbar);
+    }
+  }
+
+  logout() async {
+    await googleSignIn.signOut();
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         backgroundColor: Colors.white,
         title: Text(
@@ -125,7 +161,7 @@ class _EditProfileState extends State<EditProfile> {
                         ),
                       ),
                       RaisedButton(
-                        onPressed: () => print("update profile"),
+                        onPressed: updateProfileData,
                         child: Text(
                           "Update Profile",
                           style: TextStyle(
@@ -138,7 +174,7 @@ class _EditProfileState extends State<EditProfile> {
                       Padding(
                         padding: EdgeInsets.all(16),
                         child: FlatButton.icon(
-                          onPressed: () => print("logout"),
+                          onPressed: logout,
                           icon: Icon(Icons.cancel, color: Colors.red),
                           label: Text(
                             "Logout",

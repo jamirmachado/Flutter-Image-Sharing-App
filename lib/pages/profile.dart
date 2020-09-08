@@ -48,7 +48,9 @@ class _ProfileState extends State<Profile> {
         MaterialPageRoute(
           builder: (context) => EditProfile(currentUserId: currentUserId),
         ),
-      );
+      ).then((value) {
+        setState(() {});
+      });
     }
 
     buildButton({String text, Function function}) {
