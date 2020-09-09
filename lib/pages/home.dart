@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +32,8 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+  FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   bool isAuth = false;
   PageController pageController;
   int pageIndex = 0;
@@ -62,11 +66,49 @@ class _HomeState extends State<Home> {
       setState(() {
         isAuth = true;
       });
+      configurePushNotifications();
     } else {
       setState(() {
         isAuth = false;
       });
     }
+  }
+
+  configurePushNotifications() {
+    final GoogleSignInAccount user = googleSignIn.currentUser;
+    if (Platform.isIOS) getIOSPermission();
+
+    _firebaseMessaging.getToken().then((token) {
+      print('firebase token: $token\n');
+      usersRef
+          .document(user.id)
+          .updateData({'androidNotificationToken': token});
+    });
+    _firebaseMessaging.configure(
+      //onLaunch: (Map<String, dynamic> message) async {},
+      //onResume: (Map<String, dynamic> message) async {},
+      onMessage: (Map<String, dynamic> message) async {
+        print('on message: $message\n');
+        final String recipientId = message['data']['recipient'];
+        final String body = message['notification']['body'];
+        if (recipientId == user.id) {
+          print('notification showed');
+          SnackBar snackbar = SnackBar(
+            content: Text(body, overflow: TextOverflow.fade),
+          );
+          _scaffoldKey.currentState.showSnackBar(snackbar);
+        }
+        print('notification now showed');
+      },
+    );
+  }
+
+  getIOSPermission() {
+    _firebaseMessaging.requestNotificationPermissions(
+        IosNotificationSettings(alert: true, badge: true, sound: true));
+    _firebaseMessaging.onIosSettingsRegistered.listen((settings) {
+      print('settings registered: $settings');
+    });
   }
 
   createUser() async {
@@ -139,6 +181,7 @@ class _HomeState extends State<Home> {
 
   Scaffold buildAuthScreen() {
     return Scaffold(
+      key: _scaffoldKey,
       body: PageView(
         children: <Widget>[
           Timeline(currentUser: currentUser),
