@@ -166,3 +166,61 @@ exports.onDeletePost = functions.firestore
     });
     });
 });
+
+exports.onCreateActivityFeedItem = functions.firestore
+.document('feed/{userId}/feedItems/{activityFeedItem}')
+.onCreate(async (snapshot, context) => {
+    console.log('activity feed item created', snapshot.data());
+
+    //get user connected to feed
+    const userId = context.params.userId;
+    const userRef = admin.firestore().doc(`users/${userId}`);
+    const doc = await userRef.get();
+
+    //once we have user, check if they have a notification token and send notification if have token
+    const androidNotificationToken =  doc.data().androidNotificationToken;
+    const createdActivityFeedItem = snapshot.data();
+
+    if(androidNotificationToken) {
+        //send notif
+        sendNotification(androidNotificationToken, createdActivityFeedItem);
+    } else {
+        console('no token avaible for user');
+    }
+
+    function sendNotification(androidNotificationToken, activityFeedItem) {
+        let body;
+
+        //switch body value based on notification type
+        switch (activityFeedItem.type) {
+            case 'comment':
+                body = `${activityFeedItem.username} replied: ${activityFeedItem.commentData}`;
+                break;
+                case 'like':
+                    body = `${activityFeedItem.username} liked your post. ❤️`;
+                    break;
+                case 'follow':
+                body = `${activityFeedItem.username} started following you 👀`;
+                break;
+            default:
+                break;
+        }
+        // create message for push notification
+        const message = {
+            notification: {body},
+            token: androidNotificationToken,
+            data: {recipient: userId }
+        };
+        // send message with admin messaging
+        admin
+            .messaging
+            .send(message)
+            .then(response => {
+                //response is a message ID string
+                console.log('successfully sent message', response);
+            })
+            .catch(error => {
+                console.log('error sending message', error);
+            });
+    }
+});
