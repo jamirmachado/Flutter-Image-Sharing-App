@@ -55,10 +55,10 @@ class _HomeState extends State<Home> {
     });
   }
 
-  handleSignIn(GoogleSignInAccount account) {
+  handleSignIn(GoogleSignInAccount account) async {
     if (account != null) {
-      print('user loged in!: $account');
-      createUser();
+      //print('user loged in!: $account');
+      await createUser();
       setState(() {
         isAuth = true;
       });
