@@ -12,7 +12,9 @@ class Search extends StatefulWidget {
   _SearchState createState() => _SearchState();
 }
 
-class _SearchState extends State<Search> {
+//use 'with AutomaticKeepAliveClientMixin<Type> to keep state alive between navigation
+class _SearchState extends State<Search>
+    with AutomaticKeepAliveClientMixin<Search> {
   TextEditingController searchController = TextEditingController();
   Future<QuerySnapshot> searchResultsFuture;
 
@@ -103,8 +105,12 @@ class _SearchState extends State<Search> {
     );
   }
 
+  //keep the state of page when navigating
+  get wantKeepAlive => true;
+
   @override
   Widget build(BuildContext context) {
+    super.build(context); //keep the state of page when navigating
     return Scaffold(
       backgroundColor: Colors.purple[900],
       appBar: buildSearchField(),
