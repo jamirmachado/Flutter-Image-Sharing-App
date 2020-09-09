@@ -213,7 +213,7 @@ exports.onCreateActivityFeedItem = functions.firestore
         };
         // send message with admin messaging
         admin
-            .messaging
+            .messaging()
             .send(message)
             .then(response => {
                 //response is a message ID string
