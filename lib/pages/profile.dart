@@ -25,12 +25,48 @@ class _ProfileState extends State<Profile> {
   String postOrientation = "grid";
   bool isLoading = false;
   int postCount = 0;
+  int followersCount = 0;
+  int followingCount = 0;
   List<Post> posts = [];
 
   @override
   void initState() {
     super.initState();
     getProfilePosts();
+    getFollowers();
+    getFollowing();
+    checkIfFollowing();
+  }
+
+  checkIfFollowing() async {
+    DocumentSnapshot doc = await followersRef
+        .document(widget.profileId)
+        .collection('userFollowers')
+        .document(currentUserId)
+        .get();
+    setState(() {
+      isFollowing = doc.exists;
+    });
+  }
+
+  getFollowers() async {
+    QuerySnapshot snapshot = await followersRef
+        .document(widget.profileId)
+        .collection('userFollowers')
+        .getDocuments();
+    setState(() {
+      followersCount = snapshot.documents.length;
+    });
+  }
+
+  getFollowing() async {
+    QuerySnapshot snapshot = await followingRef
+        .document(widget.profileId)
+        .collection('userFollowing')
+        .getDocuments();
+    setState(() {
+      followingCount = snapshot.documents.length;
+    });
   }
 
   getProfilePosts() async {
@@ -115,9 +151,66 @@ class _ProfileState extends State<Profile> {
     buildProfileButton() {
       //view own profile, sho profile button to edit
       bool isProfileOwner = currentUserId == widget.profileId;
-      handleUnfollowUser() {}
 
-      handleFollowUser() {}
+      //follow / unfollow handles
+      handleUnfollowUser() {
+        setState(() {
+          isFollowing = false;
+        });
+        //remove de follower
+        followersRef
+            .document(widget.profileId)
+            .collection('userFollowers')
+            .document(currentUserId)
+            .get()
+            .then((doc) {
+          if (doc.exists) {
+            doc.reference.delete();
+          }
+        });
+        //remove following
+        followingRef
+            .document(currentUserId)
+            .collection('userFollowing')
+            .document(widget.profileId)
+            .get()
+            .then((doc) {
+          if (doc.exists) {
+            doc.reference.delete();
+          }
+        });
+      }
+
+      handleFollowUser() {
+        setState(() {
+          isFollowing = true;
+        });
+        //make auth user follower of THAT user (update THEIR followers collection)
+        followersRef
+            .document(widget.profileId)
+            .collection('userFollowers')
+            .document(currentUserId)
+            .setData({});
+        // Put THAT user on YOUR following colletion (update your following colletion)
+        followingRef
+            .document(currentUserId)
+            .collection('userFollowing')
+            .document(widget.profileId)
+            .setData({});
+        //add notification about follow
+        activityFeedRef
+            .document(widget.profileId)
+            .collection('feedItems')
+            .document(currentUserId)
+            .setData({
+          'type': 'follow',
+          'ownerId': widget.profileId,
+          'username': currentUser.username,
+          'userId': currentUserId,
+          'userProfileImg': currentUser.avatar,
+          'timestamp': timestamp,
+        });
+      }
 
       if (isProfileOwner) {
         return buildButton(
@@ -164,8 +257,8 @@ class _ProfileState extends State<Profile> {
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: <Widget>[
                               buildCountColumn("posts", postCount),
-                              buildCountColumn("followers", 0),
-                              buildCountColumn("following", 0),
+                              buildCountColumn("followers", followersCount),
+                              buildCountColumn("following", followingCount),
                             ],
                           ),
                           Row(
