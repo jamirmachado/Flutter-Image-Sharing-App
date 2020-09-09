@@ -68,6 +68,20 @@ class CommentsState extends State<Comments> {
       "timestamp": DateTime.now(),
       //"timestamp": timestamp,
     });
+    //if is not the post owner, save activity feed for notification
+    bool isNotPostOwner = postOwnerId != currentUser.id;
+    if (isNotPostOwner) {
+      activityFeedRef.document(postOwnerId).collection('feedItems').add({
+        'type': 'comment',
+        'commentData': commentController.text,
+        'username': currentUser.username,
+        'userId': currentUser.id,
+        'userProfileImg': currentUser.avatar,
+        'postId': postId,
+        'mediaUrl': postMediaUrl,
+        'timestamp': timestamp,
+      });
+    }
     commentController.clear();
   }
 
